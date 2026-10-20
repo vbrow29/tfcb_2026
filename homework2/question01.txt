@@ -1,0 +1,15 @@
+My username is: root.
+My home directory is: /root.
+The contents of tfcb_2026/lectures/lecture04/ are: 
+01-first-steps.md
+02-directories
+03-redirection
+04-vim
+05-history
+06-scripting
+07-more-interactive-shell
+README.md
+quickref.md
+sequence.gb
+slides
+vader.txt
