@@ -1,0 +1,22 @@
+# Fixes layered on top of the published course image.
+#
+# The original .devcontainer/Dockerfile can no longer be rebuilt from scratch
+# (its 2021-era mamba crashes on current conda channels), so this file starts
+# from the known-good image and adds only what is missing.
+#
+# Built and pushed by .github/workflows/devcontainer-image.yml
+
+FROM ghcr.io/fredhutch/tfcb_2026:1.0.0
+
+# `make` is required to compile R packages from source (Rcpp, locfit, ...).
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends make \
+ && rm -rf /var/lib/apt/lists/*
+
+# Lecture 16: DESeq2 (Bioconductor 3.14, matching R 4.1.3 in the `tidy` env).
+# GenomeInfoDbData is listed by conda but its files are missing in the base
+# image, which breaks Rsamtools/plyranges/GenomicAlignments; reinstall it.
+# Installs run sequentially on purpose: parallel builds race on Rcpp.
+RUN export PATH=/opt/conda/envs/tidy/bin:$PATH \
+ && Rscript -e 'BiocManager::install(c("GenomeInfoDbData", "DESeq2"), update = FALSE, ask = FALSE)' \
+ && Rscript -e 'suppressPackageStartupMessages({library(Rsamtools); library(GenomicAlignments); library(SummarizedExperiment); library(DESeq2); library(plyranges); library(tidyverse)}); cat("tidy env OK, DESeq2", as.character(packageVersion("DESeq2")), "\n")'
